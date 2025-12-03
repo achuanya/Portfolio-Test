@@ -117,6 +117,15 @@
   }
 }
 
+/* ===== GLightbox https://github.com/biati-digital/glightbox ===== */
+  .glightbox-clean .gdesc-inner {
+    padding: 0 !important;
+  }
+  .glightbox-clean .gslide-title {
+    margin-bottom: 0 !important;
+    padding: 0 12px !important;
+  }
+
 @layer components {
   .display-none {
     @apply hidden;

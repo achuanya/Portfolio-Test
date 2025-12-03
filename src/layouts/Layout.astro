@@ -135,8 +135,46 @@ const structuredData = {
     <ViewTransitions />
 
     <script is:inline src="/toggle-theme.js" async></script>
+    <!-- GLightbox styles: required for the lightbox UI -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
   </head>
   <body>
     <slot />
+    <!-- GLightbox script: exposes global GLightbox() initializer -->
+    <script src="https://cdn.jsdelivr.net/gh/mcstudios/glightbox/dist/js/glightbox.min.js"></script>
+    <!-- Initialize GLightbox for images produced by Markdown -->
+    <script is:inline data-astro-rerun>
+      (() => {
+        const init = () => {
+          // Ensure each anchor points to the actual rendered image source
+          const anchors = document.querySelectorAll('a.glightbox');
+          if (!anchors.length) return;
+          anchors.forEach(a => {
+            const img = a.querySelector('img');
+            if (!img) return;
+            // Prefer responsive image's currentSrc; fallback to src
+            const finalSrc = img.currentSrc || img.src;
+            if (finalSrc && a.getAttribute('href') !== finalSrc) a.setAttribute('href', finalSrc);
+            // Forward alt text as the slide title if not already set
+            const alt = img.getAttribute('alt');
+            if (alt && !a.dataset.title) a.dataset.title = alt;
+          });
+          // Recreate the lightbox after client-side navigation
+          if (window.__glightboxInstance && window.__glightboxInstance.destroy) window.__glightboxInstance.destroy();
+          if (typeof GLightbox === "function") {
+            window.__glightboxInstance = GLightbox({
+              selector: 'a.glightbox',
+              touchNavigation: true,
+              loop: true,
+              autoplayVideos: false,
+            });
+          }
+        };
+        // Re-init after Astro view transitions and on initial load
+        document.addEventListener("astro:after-swap", init);
+        if (document.readyState === "complete" || document.readyState === "interactive") init();
+        else document.addEventListener("DOMContentLoaded", init);
+      })();
+    </script>
   </body>
 </html>
